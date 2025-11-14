@@ -49,29 +49,40 @@ class CKKSEncoder:
 
         return Plaintext(Polynomial(plain_len, message), scaling_factor)
 
-
-    def decode(self, plain):
-        """Decodes a plaintext polynomial.
-
-        Decodes a plaintext polynomial back to a list of integers.
-
-        Args:
-            plain (Plaintext): Plaintext to decode.
-
-        Returns:
-            A decoded list of integers.
-        """
-        if not isinstance(plain, Plaintext):
-            raise ValueError("Input to decode must be a Plaintext")
-
-        plain_len = len(plain.poly.coeffs)
-        num_values = plain_len >> 1
-
-        # Divide by scaling factor, and turn back into a complex number.
-        message = [0] * num_values
-        for i in range(num_values):
-            message[i] = complex(plain.poly.coeffs[i] / plain.scaling_factor,
-                                 plain.poly.coeffs[i + num_values] / plain.scaling_factor)
-
-        # Compute canonical embedding variant.
-        return self.fft.embedding(message)
+def decode(self, plain):
+    """Decodes a plaintext polynomial.
+    Decodes a plaintext polynomial back to a list of integers.
+    Args:
+        plain (Plaintext): Plaintext to decode.
+    Returns:
+        A decoded list of integers.
+    """
+    if not isinstance(plain, Plaintext):
+        raise ValueError("Input to decode must be a Plaintext")
+    plain_len = len(plain.poly.coeffs)
+    num_values = plain_len >> 1
+    
+    # Divide by scaling factor, and turn back into a complex number.
+    message = [0] * num_values
+    
+    # Get modulus for proper reduction
+    modulus = self.params.ciph_modulus
+    half_modulus = modulus // 2
+    
+    for i in range(num_values):
+        # Reduce coefficients modulo ciph_modulus to center them
+        real_coeff = plain.poly.coeffs[i] % modulus
+        imag_coeff = plain.poly.coeffs[i + num_values] % modulus
+        
+        # Center around zero (map [0, modulus) to [-modulus/2, modulus/2))
+        if real_coeff > half_modulus:
+            real_coeff -= modulus
+        if imag_coeff > half_modulus:
+            imag_coeff -= modulus
+        
+        # Now divide by scaling factor (these are much smaller numbers)
+        message[i] = complex(real_coeff / plain.scaling_factor,
+                           imag_coeff / plain.scaling_factor)
+    
+    # Compute canonical embedding variant.
+    return self.fft.embedding(message)
