@@ -50,13 +50,13 @@ class CKKSEncoder:
         return Plaintext(Polynomial(plain_len, message), scaling_factor)
 
     def decode(self, plain):
-    """Decodes a plaintext polynomial.
-    Decodes a plaintext polynomial back to a list of integers.
-    Args:
-        plain (Plaintext): Plaintext to decode.
-    Returns:
-        A decoded list of integers.
-    """
+        """Decodes a plaintext polynomial.
+        Decodes a plaintext polynomial back to a list of integers.
+        Args:
+            plain (Plaintext): Plaintext to decode.
+        Returns:
+            A decoded list of integers.
+        """
         if not isinstance(plain, Plaintext):
             raise ValueError("Input to decode must be a Plaintext")
         plain_len = len(plain.poly.coeffs)
