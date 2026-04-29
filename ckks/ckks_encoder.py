@@ -20,7 +20,7 @@ class CKKSEncoder:
             params (Parameters): Parameters including polynomial degree,
                 plaintext modulus, and ciphertext modulus.
         """
-        self.params = params.poly_degree
+        self.degree = params.poly_degree
         self.fft = FFTContext(self.degree * 2)
 
     def encode(self, values, scaling_factor):
